@@ -13,6 +13,8 @@ import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
@@ -202,6 +204,23 @@ public final class Desktop {
     }
 
     private static Image trayImage() {
+        // Installs serve web/ from inside lark.jar, so load the icon as a resource first.
+        try (java.io.InputStream in = Lark.class.getResourceAsStream("/web/favicon.png")) {
+            if (in != null) {
+                BufferedImage logo = ImageIO.read(in);
+                if (logo != null) return logo;
+            }
+        } catch (IOException ignored) {
+        }
+        try {
+            File png = new File("web/favicon.png");
+            if (png.isFile()) {
+                BufferedImage logo = ImageIO.read(png);
+                if (logo != null) return logo;
+            }
+        } catch (IOException ignored) {
+            // fall back to the drawn icon
+        }
         int size = 64;
         BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = img.createGraphics();

@@ -158,7 +158,7 @@ public final class Updates {
         }
     }
 
-    /** Where an update download may start: TreyvoPrime/lark release assets over HTTPS, or localhost for packaging. */
+    /** Where an update download may start: TreyvoPrime/lark or LarkDevelopment/Lark release assets over HTTPS, or localhost for packaging. */
     static boolean allowedDownloadUrl(String url) {
         if (url == null || url.isBlank()) return false;
         try {
@@ -173,12 +173,19 @@ public final class Updates {
             if (uri.getPort() != -1 && uri.getPort() != 443) return false;
             String path = uri.getRawPath() == null ? "" : uri.getRawPath();
             return host.equals("github.com")
-                    && path.startsWith("/TreyvoPrime/lark/releases/download/")
+                    && releasePathOk(path)
                     && !path.contains("/../") && !path.endsWith("/..")
                     && !path.contains("%2e") && !path.contains("%2E");
         } catch (Exception e) {
             return false;
         }
+    }
+
+    /** Release assets from the official repos: TreyvoPrime/lark and LarkDevelopment/Lark. */
+    private static boolean releasePathOk(String path) {
+        String p = path.toLowerCase(Locale.ROOT);
+        return p.startsWith("/treyvoprime/lark/releases/download/")
+                || p.startsWith("/larkdevelopment/lark/releases/download/");
     }
 
     /** Where a release download may end up after redirects: the pinned URL itself or GitHub's release asset CDN. */
@@ -274,11 +281,11 @@ public final class Updates {
                 throw new RequestFail(403, "Updates must use the official download from the update feed.");
             }
         } else if (!allowedDownloadUrl(downloadUrl)) {
-            // Even loopback clients must use a TreyvoPrime/lark release asset; the feed's SHA-256 is still required below.
-            throw new RequestFail(400, "Update URLs must be TreyvoPrime/lark GitHub release downloads.");
+            // Even loopback clients must use an official Lark release asset; the feed's SHA-256 is still required below.
+            throw new RequestFail(400, "Update URLs must be TreyvoPrime/lark or LarkDevelopment/Lark GitHub release downloads.");
         }
         if (!allowedDownloadUrl(downloadUrl)) {
-            throw new RequestFail(400, "Update downloads must be HTTPS TreyvoPrime/lark GitHub release assets (or localhost for packaging).");
+            throw new RequestFail(400, "Update downloads must be HTTPS TreyvoPrime/lark or LarkDevelopment/Lark GitHub release assets (or localhost for packaging).");
         }
         // Public releases must carry SHA-256 — refuse unsigned remote updates.
         if (!isLocalhostUrl(downloadUrl) && (expectedSha == null || expectedSha.isBlank())) {

@@ -943,7 +943,7 @@ public final class Server {
     private static boolean publicDownload(String path, String method) {
         if (!"GET".equals(method) && !"HEAD".equals(method)) return false;
         return downloadName(path) != null || "/update.json".equals(path)
-                || "/download.html".equals(path) || "/favicon.svg".equals(path);
+                || "/download.html".equals(path) || "/favicon.svg".equals(path) || "/favicon.png".equals(path);
     }
 
     private boolean hostPortOk(String host) {
